@@ -1,3 +1,5 @@
+pragma circom 2.0.0;
+
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/pedersen.circom";
 include "merkleTree.circom";
@@ -33,10 +35,10 @@ template Withdraw(levels) {
     signal input relayer;  // not taking part in any computations
     signal input fee;      // not taking part in any computations
     signal input refund;   // not taking part in any computations
-    signal private input nullifier;
-    signal private input secret;
-    signal private input pathElements[levels];
-    signal private input pathIndices[levels];
+    signal input nullifier;
+    signal input secret;
+    signal input pathElements[levels];
+    signal input pathIndices[levels];
 
     component hasher = CommitmentHasher();
     hasher.nullifier <== nullifier;
@@ -64,4 +66,4 @@ template Withdraw(levels) {
     refundSquare <== refund * refund;
 }
 
-component main = Withdraw(20);
+component main {public [root, nullifierHash, recipient, relayer, fee, refund]} = Withdraw(20);
