@@ -26,12 +26,17 @@
   "dependencies": {
     "@openzeppelin/contracts": "^3.4.0",
     "@trufflesuite/web3-provider-engine": "^15.0.13-1",
+    "bn-chai": "^1.0.1",
+    "chai": "^4.3.6",
+    "chai-as-promised": "^7.1.1",
     "circomlib": "^2.0.3",
     "circomlibjs": "^0.1.2",
     "dotenv": "^8.2.0",
     "ethereumjs-wallet": "^1.0.1",
+    "fixed-merkle-tree": "^0.7.3",
     "snarkjs": "^0.4.16",
     "solc": "^0.7.6",
-    "truffle": "^5.1.66"
+    "truffle": "^5.1.66",
+    "web3-utils": "^1.7.3"
   }
 }
