@@ -9,6 +9,11 @@ const networkId = {
 
 module.exports = {
   networks: {
+    development: {
+      host: "127.0.0.1",
+      port: 9545,
+      network_id: "*"
+    },
     localnet: {
       provider: () => {
         return new PrivateKeyProvider(process.env.LOCALNET_PRIVATE_KEY, 'http://localhost:9500', networkId.Testnet)
