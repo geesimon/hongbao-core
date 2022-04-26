@@ -1,11 +1,11 @@
 {
   "name": "hongbao",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "scripts": {
-    "build:circuit:compile": "circom circuits/withdraw.circom --r1cs --wasm --output build/circuits",
+    "build:circuit:compile": "circom circuits/withdraw.circom --r1cs --wasm --sym --output build/circuits",
     "build:circuit:setup": "sh scripts/genCircuitKey.sh",
     "build:circuit": "mkdir -p build/circuits && npm run build:circuit:compile && npm run build:circuit:setup",
-    "build:contract": "npx truffle compile",
+    "build:contract": "npx truffle compile && node scripts/compileHasher.js ",
     "build:browserify": "npx browserify src/cli.js -o index.js --exclude worker_threads",
     "build": "npm run build:circuit && npm run build:contract && npm run build:browserify",
     "browserify": "npm run build:browserify",
@@ -19,13 +19,12 @@
     "prettier:check": "prettier --check . --config .prettierrc",
     "prettier:fix": "prettier --write . --config .prettierrc",
     "lint": "yarn eslint && yarn prettier:check",
-    "flat": "npx truffle-flattener contracts/ETHTornado.sol > ETHTornado_flat.sol && npx truffle-flattener contracts/ERC20Tornado.sol > ERC20Tornado_flat.sol",
-    "download": "node scripts/download.js",
     "coverage": "yarn truffle run coverage"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^3.4.0",
     "@trufflesuite/web3-provider-engine": "^15.0.13-1",
+    "bigint-buffer": "^1.1.5",
     "bn-chai": "^1.0.1",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
@@ -37,6 +36,7 @@
     "snarkjs": "^0.4.16",
     "solc": "^0.7.6",
     "truffle": "^5.1.66",
+    "wasmsnark": "^0.0.10",
     "web3-utils": "^1.7.3"
   }
 }

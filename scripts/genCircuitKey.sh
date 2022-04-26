@@ -1,3 +1,4 @@
+#!/bin/bash -e
 cd build/circuits
 
 # Download Power of Tau
@@ -28,6 +29,5 @@ npx snarkjs zkey export verificationkey circuit_withdraw_final.zkey withdraw_ver
 
 # Generate verificatoin smart contract
 npx snarkjs zkey export solidityverifier circuit_withdraw_final.zkey Verifier.sol
-
-echo "You may want to copy Verifier.sol to /contracts folder."
+cp Verifier.sol ../../contracts
 cd ../..

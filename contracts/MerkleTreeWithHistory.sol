@@ -13,7 +13,7 @@
 pragma solidity ^0.7.0;
 
 interface IHasher {
-  function MiMCSponge(uint256 in_xL, uint256 in_xR) external pure returns (uint256 xL, uint256 xR);
+  function MiMCSponge(uint256 in_xL, uint256 in_xR, uint256 k) external pure returns (uint256 xL, uint256 xR);
 }
 
 contract MerkleTreeWithHistory {
@@ -57,12 +57,15 @@ contract MerkleTreeWithHistory {
   ) public pure returns (bytes32) {
     require(uint256(_left) < FIELD_SIZE, "_left should be inside the field");
     require(uint256(_right) < FIELD_SIZE, "_right should be inside the field");
-    uint256 R = uint256(_left);
-    uint256 C = 0;
-    (R, C) = _hasher.MiMCSponge(R, C);
-    R = addmod(R, uint256(_right), FIELD_SIZE);
-    (R, C) = _hasher.MiMCSponge(R, C);
-    return bytes32(R);
+    // uint256 R = uint256(_left);
+    // uint256 C = 0;
+    // (R, C) = _hasher.MiMCSponge(R, C);
+    // R = addmod(R, uint256(_right), FIELD_SIZE);
+    // (R, C) = _hasher.MiMCSponge(R, C);
+    // return bytes32(R);
+    (uint256 hashValue,) = _hasher.MiMCSponge(uint256(_left), uint256(_right), 0);
+    
+    return bytes32(hashValue);
   }
 
   function _insert(bytes32 _leaf) internal returns (uint32 index) {

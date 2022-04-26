@@ -2,6 +2,7 @@ pragma circom 2.0.0;
 
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/pedersen.circom";
+include "../node_modules/circomlib/circuits/mimcsponge.circom";
 include "merkleTree.circom";
 
 // computes Pedersen(nullifier + secret)
@@ -28,7 +29,7 @@ template CommitmentHasher() {
 }
 
 // Verifies that commitment that corresponds to given secret and nullifier is included in the merkle tree of deposits
-template Withdraw(levels) {
+template WithdrawTest(levels) {
     signal input root;
     signal input nullifierHash;
     signal input recipient; // not taking part in any computations
@@ -53,8 +54,8 @@ template Withdraw(levels) {
     component hasher = CommitmentHasher();
     hasher.nullifier <== nullifier;
     hasher.secret <== secret;
-    hasher.nullifierHash === nullifierHash;
-
+    // hasher.nullifierHash === nullifierHash;
+    
     component tree = MerkleTreeChecker(levels);
     tree.leaf <== hasher.commitment; //hasher.commitment;
     tree.root <== root;
@@ -86,4 +87,4 @@ template Withdraw(levels) {
     refundSquare <== refund * refund;
 }
 
-component main {public [root, nullifierHash, recipient, relayer, fee, refund]} = Withdraw(20);
+component main {public [root, nullifierHash, recipient, relayer, fee, refund]} = WithdrawTest(20);
