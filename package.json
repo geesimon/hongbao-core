@@ -28,6 +28,7 @@
     "bn-chai": "^1.0.1",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
+    "circom_tester": "^0.0.11",
     "circomlib": "^2.0.3",
     "circomlibjs": "^0.1.2",
     "dotenv": "^8.2.0",

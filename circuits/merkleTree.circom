@@ -3,17 +3,29 @@ pragma circom 2.0.0;
 include "../node_modules/circomlib/circuits/mimcsponge.circom";
 
 // Computes MiMC([left, right])
+// template HashLeftRight() {
+//     signal input left;
+//     signal input right;
+//     signal output hash;
+
+//     component hasher = MiMCSponge(2, 220, 1);
+//     hasher.ins[0] <== left;
+//     hasher.ins[1] <== right;
+//     hasher.k <== 0;
+//     hash <== hasher.outs[0];
+// }
 template HashLeftRight() {
     signal input left;
     signal input right;
     signal output hash;
 
-    component hasher = MiMCSponge(2, 220, 1);
-    hasher.ins[0] <== left;
-    hasher.ins[1] <== right;
+    component hasher =  MiMCFeistel(220);
+    hasher.xL_in <== left;
+    hasher.xR_in <== right;
     hasher.k <== 0;
-    hash <== hasher.outs[0];
+    hash <== hasher.xL_out;
 }
+
 
 // if s == 0 returns [in[0], in[1]]
 // if s == 1 returns [in[1], in[0]]
@@ -34,7 +46,7 @@ template MerkleTreeChecker(levels) {
     signal input root;
     signal input pathElements[levels];
     signal input pathIndices[levels];
-    signal output circuit_root;
+    // signal output circuit_root;
 
     component selectors[levels];
     component hashers[levels];
@@ -50,6 +62,6 @@ template MerkleTreeChecker(levels) {
         hashers[i].right <== selectors[i].out[1];
     }
 
-    // root === hashers[levels - 1].hash; //Need Uncomment
-    hashers[levels - 1].hash ==> circuit_root;
+    root === hashers[levels - 1].hash;
+    // hashers[levels - 1].hash ==> circuit_root;
 }
