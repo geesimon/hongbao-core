@@ -10,10 +10,10 @@
  */
 
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 import "./MerkleTreeWithHistory.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 interface IVerifier {
   function verifyProof(bytes memory _proof, uint256[6] memory _input) external returns (bool);
@@ -88,7 +88,7 @@ abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
     require(
       verifier.verifyProof(
         _proof,
-        [uint256(_root), uint256(_nullifierHash), uint256(_recipient), uint256(_relayer), _fee, _refund]
+        [uint256(_root), uint256(_nullifierHash), uint256(uint160(address(_recipient))), uint256(uint160(address(_relayer))), _fee, _refund]
       ),
       "Invalid withdraw proof"
     );

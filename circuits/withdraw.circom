@@ -18,7 +18,7 @@ template Withdraw(levels) {
 
     // Debug Output
     signal output input_root;
-    signal output circuit_root;
+    // signal output circuit_root;
     signal output circuit_nullifier;
     signal output circuit_nullifierHash;
     signal output circuit_secret;
@@ -32,7 +32,7 @@ template Withdraw(levels) {
     hasher.nullifierHash === nullifierHash;
 
     component tree = MerkleTreeChecker(levels);
-    tree.leaf <== hasher.commitment; //hasher.commitment;
+    tree.leaf <== hasher.commitmentHash;
     tree.root <== root;
     for (var i = 0; i < levels; i++) {
         tree.pathElements[i] <== pathElements[i];
@@ -42,11 +42,11 @@ template Withdraw(levels) {
     }
     //Debug -- Start
     input_root <== root;    
-    circuit_root <== tree.circuit_root;
+    // circuit_root <== tree.circuit_root;
     circuit_nullifier <== nullifier;
     circuit_nullifierHash <== hasher.nullifierHash;
     circuit_secret <== secret;
-    circuit_commitment <== hasher.commitment;
+    circuit_commitment <== hasher.commitmentHash;
     //Debug -- End
 
     // Add hidden signals to make sure that tampering with recipient or fee will invalidate the snark proof
