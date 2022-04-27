@@ -30,7 +30,7 @@ npx snarkjs zkey export verificationkey circuit_withdraw_final.zkey withdraw_ver
 # Generate verificatoin smart contract
 npx snarkjs zkey export solidityverifier circuit_withdraw_final.zkey Verifier.sol
 # Replace version
-sed -i 's/0.6.11/0.7.0/g' Verifier.sol
+sed -i 's/0.6.11/0.8.0/g' Verifier.sol
 
 cp Verifier.sol ../../contracts
 rm -f ../contracts/Verifier.json
