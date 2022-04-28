@@ -1,54 +1,61 @@
 const path = require("path");
-const Scalar = require("ffjavascript").Scalar;
+// const Scalar = require("ffjavascript").Scalar;
 const buildPedersenHash = require("circomlibjs").buildPedersenHash;
 const buildMimcSponge = require("circomlibjs").buildMimcSponge;
-const buildBabyJub = require("circomlibjs").buildBabyjub;
+// const buildBabyJub = require("circomlibjs").buildBabyjub;
 const wasm_tester = require("circom_tester").wasm;
 const MerkleTree = require('fixed-merkle-tree').MerkleTree;
 const bigInt = require("big-integer");
+const bigInt2BytesLE = require('wasmsnark/src/utils.js').bigInt2BytesLE
 
+
+const FIELD_SIZE = bigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617');
+const ZERO_VALUE = bigInt('8568824596295711272276493421173227402986947053170746004488571001319888434851'); // = keccak256("hongbao") % FIELD_SIZE
+
+let pedersenHasher;
+let mimcHasher;
+let tree;
+
+const calcCommitmentNullifierHash = (_nullifier, _secret) => {
+    let nullifier_buff = Buffer.from(bigInt2BytesLE(_nullifier, 31));
+    let secret_buff = Buffer.from(bigInt2BytesLE(_secret, 31));
+    const preimage = Buffer.concat([nullifier_buff, secret_buff])
+
+    // console.log("nullifier_buff:", nullifier_buff);
+    // console.log("secret_buff:", secret_buff);
+    // console.log("commitment_buff:", preimage);
+    return {
+        nullifierHash: pedersenHasher(nullifier_buff),
+        commitmentHash: pedersenHasher(preimage)
+    }
+};
 
 describe("Commitment Hasher Test", function() {
-    // let babyJub
-    let pedersen;
-    let F;
-    let commitmentHasherCircuit;
     this.timeout(100000);
-    before( async() => {
-        babyJub = await buildBabyJub();
-        F = babyJub.F;
-        pedersen = await buildPedersenHash();
 
+    let commitmentHasherCircuit;
+
+    before( async() => {
+        let pedersenHash = await buildPedersenHash();
+        let babyJub = pedersenHash.babyJub;
+        let F = babyJub.F;
+
+        pedersenHasher = (data) => F.toObject(babyJub.unpackPoint(pedersenHash.hash(data))[0]);
         commitmentHasherCircuit = await wasm_tester(path.join(__dirname, "../circuits", "commitmentHasher.test.circom"));
-    });
-    after(async () => {
-        // globalThis.curve_bn128.terminate();
     });
 
     async function verifyCommitmentHasher(_nullifier, _secret) {
         let w;
 
-        let nullifier_buff = Buffer.alloc(31);
-        Scalar.toRprLE(nullifier_buff, 0, Scalar.e(_nullifier), nullifier_buff.length);
-
-        let secret_buff = Buffer.alloc(31);
-        Scalar.toRprLE(secret_buff, 0, Scalar.e(_secret), secret_buff.length);
-
         w = await commitmentHasherCircuit.calculateWitness({ nullifier: _nullifier, secret: _secret}, true);
 
-        const commitment_buff = Buffer.concat([nullifier_buff, secret_buff]);
+        const {nullifierHash, commitmentHash} = calcCommitmentNullifierHash(bigInt(_nullifier), bigInt(_secret));
 
-        const commitmentHash = pedersen.hash(commitment_buff);
-        const hP1 = babyJub.unpackPoint(commitmentHash);
+        // console.log("commitmentHash:", commitmentHash);
+        // console.log("nullifierHash:", nullifierHash);
 
-        const nullifierHash = pedersen.hash(nullifier_buff);
-        const hP2 = babyJub.unpackPoint(nullifierHash);
-
-        // console.log("commitmentHash:", F.toObject(hP1[0]));
-        // console.log("nullifierHash:", F.toObject(hP2[0]));
-
-        await commitmentHasherCircuit.assertOut(w, {commitmentHash: F.toObject(hP1[0]), 
-                                                    nullifierHash: F.toObject(hP2[0])});
+        await commitmentHasherCircuit.assertOut(w, {commitmentHash: commitmentHash, 
+                                                    nullifierHash: nullifierHash});    
     }
 
     it("Should Compute big value", async () => {
@@ -68,61 +75,97 @@ describe("Commitment Hasher Test", function() {
 
 
 describe("Merkle Tree Test", function() {
-    let babyJub
-    let mimcSponge;
-    let F;    
-    let tree;
-    this.timeout(100000);
-    // const FIELD_SIZE = Scalar.e('21888242871839275222246405745257275088548364400416034343698204186575808495617');
-    const ZERO_VALUE = Scalar.e('8568824596295711272276493421173227402986947053170746004488571001319888434851'); // = keccak256("hongbao") % FIELD_SIZE
-
-    const mimcHash = (left, right) => F.toObject(mimcSponge.hash(left, right, 0).xL);
+    this.timeout(300000);
+    
+    let merkleTreeCircuit;
     
     before( async() => {
-        mimcSponge = await buildMimcSponge()
-        F = mimcSponge.F;
+        let mimcSponge = await buildMimcSponge();
+        let F = mimcSponge.F;
 
-        tree = new MerkleTree(20, [], { hashFunction: mimcHash, zeroElement: ZERO_VALUE});
+        //Set global Mimc hash function
+        mimcHasher = (left, right) => F.toObject(mimcSponge.hash(left, right, 0).xL);
+
+        tree = new MerkleTree(20, [], { hashFunction: mimcHasher, zeroElement: ZERO_VALUE});
         
         merkleTreeCircuit = await wasm_tester(path.join(__dirname, "../circuits", "merkleTree.test.circom"));
         // mimcCircuit = await wasm_tester(path.join(__dirname, "../circuits", "mimc.test.circom"));
     });
 
-    after(async () => {
-        // globalThis.curve_bn128.terminate();
-    });
-
-    it("Should insert many leaves and verify any one", async () => {
-        let leaves = Array(100);
-        let theOne = Math.floor(leaves.length / 2);
+    it("Should insert 1000 leaves and verify any 10", async () => {
+        let leaves = Array(1000);
+        let checkCandidates = Array(10);
 
         for (var i = 0; i < leaves.length; i++){
-            leaves[i] = bigInt.randBetween(0, bigInt(2).pow(256));
+            leaves[i] = bigInt.randBetween(0, FIELD_SIZE);
             tree.insert(leaves[i]);
         }
-        const { pathElements, pathIndices } = tree.proof(leaves[theOne]);
+        for (var i = 0; i < checkCandidates.length; i++) {
+            checkCandidates[i] = Math.floor(Math.random() * leaves.length);
+        }
 
-        let w;
+        for (var i = 0; i < checkCandidates.length; i++){
+            console.log("check ", checkCandidates[i], ":", leaves[checkCandidates[i]].toString(), "->", tree.root);
+            let w;
 
-        w = await merkleTreeCircuit.calculateWitness({ leaf: leaves[theOne],
-                                                        root: tree.root, 
-                                                        pathElements: pathElements,
-                                                        pathIndices: pathIndices}, 
-                                                        true);
-
-        // await merkleTreeCircuit.assertOut(w, {circuit_root: tree.root});
-        await merkleTreeCircuit.checkConstraints(w);
+            const { pathElements, pathIndices } = tree.proof(leaves[checkCandidates[i]]);
+            // console.log(pathElements, pathIndices);
+            w = await merkleTreeCircuit.calculateWitness({ leaf: leaves[checkCandidates[i]],
+                                                            pathElements: pathElements,
+                                                            pathIndices: pathIndices}, 
+                                                            true);
+            // console.log(w);
+            await merkleTreeCircuit.assertOut(w, {root: tree.root});
+            await merkleTreeCircuit.checkConstraints(w);
+        }
     });
 
-    // it ("Test mimc", async () => {
-    //     let w;
-    //     let left = Scalar.e("1");
-    //     let right = Scalar.e("2");
+    describe("Withdraw Test", function () {
+        this.timeout(600000);
 
-    //     w = await mimcCircuit.calculateWitness({ left: left, right: right}, true);
-    //     console.log(w);
-    //     let hash = mimcHash(left, right);
-    //     await mimcCircuit.assertOut(w, {hashFeistel: hash,
-    //                                     hashSponge: hash});
-    // });
+        let withdrawCircuit;
+
+        const rbigint = (nbytes) => bigInt.randBetween(0, bigInt(2).pow(nbytes * 8));
+
+        before( async() => {           
+            withdrawCircuit = await wasm_tester(path.join(__dirname, "../circuits", "withdraw.test.circom"));
+        });
+
+        it("Should insert and verify 10 commitments in merkle tree", async () => {
+            for (var i = 0; i < 10; i++) {
+                let w;
+                let nullifier = rbigint(31);
+                let secret = rbigint(31);
+
+                const {nullifierHash, commitmentHash} = calcCommitmentNullifierHash(nullifier, secret);
+                tree.insert(commitmentHash);
+                const {pathElements, pathIndices} = tree.proof(commitmentHash);
+
+                console.log("check ", i, ":", commitmentHash, "->", tree.root);
+
+                w = await withdrawCircuit.calculateWitness({ root: tree.root.toString(),
+                                                            nullifier: nullifier.toString(),
+                                                            nullifierHash: nullifierHash.toString(),
+                                                            secret: secret.toString(),
+                                                            pathElements: pathElements,
+                                                            pathIndices: pathIndices,
+                                                            recipient: "247339843768101550699144957037481732776977273098",
+                                                            relayer: "1431779679606208237886699149837667504955655623894",
+                                                            fee: "200000000000000000",
+                                                            refund: "0",
+                                                            }, 
+                                                            true);
+                await withdrawCircuit.assertOut(w, {
+                                                        input_root: tree.root,
+                                                        input_nullifier: nullifier,
+                                                        input_nullifierHash: nullifierHash,
+                                                        input_secret: secret,
+                                                        circuit_root: tree.root,
+                                                        circuit_nullifierHash: nullifierHash,
+                                                        circuit_commitment: commitmentHash
+                                                        });
+                await withdrawCircuit.checkConstraints(w);
+            }
+        })
+    });
 });

@@ -2,7 +2,7 @@
   "name": "hongbao",
   "version": "0.0.1",
   "scripts": {
-    "build:circuit:compile": "circom circuits/withdraw.circom --r1cs --wasm --sym --output build/circuits",
+    "build:circuit:compile": "circom circuits/withdraw.circom --r1cs --wasm --output build/circuits",
     "build:circuit:setup": "sh scripts/genCircuitKey.sh",
     "build:circuit": "mkdir -p build/circuits && npm run build:circuit:compile && npm run build:circuit:setup",
     "build:contract": "npx truffle compile && node scripts/compileHasher.js ",
