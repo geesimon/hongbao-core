@@ -5,7 +5,12 @@ import "./MerkleTreeWithHistory.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 interface IVerifier {
-  function verifyProof(bytes memory _proof, uint256[6] memory _input) external returns (bool);
+    function verifyProof( 
+            uint[2] memory a,
+            uint[2][2] memory b,
+            uint[2] memory c,
+            uint[6] memory input
+        ) external view returns (bool r);
 }
 
 abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
@@ -61,30 +66,48 @@ abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
       - hash of unique deposit nullifier to prevent double spends
       - the recipient of funds
       - optional fee that goes to the transaction sender (usually a relay)
-  */
+    @param  _proofData: zkSNARK proof _pi_a, _pi_b, _pic
+            _publicInputs: [root, nullifierHash, recipient, relayer, fee, refund]
+  **/
   function withdraw(
-    bytes calldata _proof,
-    bytes32 _root,
-    bytes32 _nullifierHash,
-    address payable _recipient,
-    address payable _relayer,
-    uint256 _fee,
-    uint256 _refund
-  ) external payable nonReentrant {
-    require(_fee <= denomination, "Fee exceeds transfer value");
-    require(!nullifierHashes[_nullifierHash], "The note has been already spent");
-    require(isKnownRoot(_root), "Cannot find your merkle root"); // Make sure to use a recent one
+    uint256[8] memory _proofData,
+    // uint[2] memory _pi_a,
+    // uint[2][2] memory _pi_b,
+    // uint[2] memory _pi_c,
+    uint256[6] memory _publicInputs
+    // bytes calldata _proof,
+    // bytes32 _root,
+    // bytes32 _nullifierHash,
+    // address payable _recipient,
+    // address payable _relayer,
+    // uint256 _fee,
+    // uint256 _refund
+  ) external payable nonReentrant{
+    
+    require(_publicInputs[4] <= denomination, "Fee exceeds transfer value");
+    require(!nullifierHashes[bytes32(_publicInputs[1])], "The note has been already spent");
+    require(isKnownRoot(bytes32(_publicInputs[0])), "Cannot find your merkle root"); // Make sure to use a recent one
     require(
-      verifier.verifyProof(
-        _proof,
-        [uint256(_root), uint256(_nullifierHash), uint256(uint160(address(_recipient))), uint256(uint160(address(_relayer))), _fee, _refund]
-      ),
+      verifier.verifyProof([_proofData[0], _proofData[1]],
+                            [[_proofData[2], _proofData[3]], [_proofData[4], _proofData[5]]],
+                            [_proofData[6], _proofData[7]],
+                          _publicInputs),
       "Invalid withdraw proof"
     );
 
-    nullifierHashes[_nullifierHash] = true;
-    _processWithdraw(_recipient, _relayer, _fee, _refund);
-    emit Withdrawal(_recipient, _nullifierHash, _relayer, _fee);
+    nullifierHashes[bytes32(_publicInputs[1])] = true;
+    _processWithdraw(
+                    payable(address(uint160(_publicInputs[2]))),
+                    payable(address(uint160(_publicInputs[3]))),
+                    _publicInputs[4], 
+                    _publicInputs[5]
+                    );
+    emit Withdrawal(
+                    payable(address(uint160(_publicInputs[2]))), 
+                    bytes32(_publicInputs[1]), 
+                    payable(address(uint160(_publicInputs[3]))), 
+                    _publicInputs[4]
+                    );
   }
 
   /** @dev this function is defined in a child contract */
