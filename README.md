@@ -1,104 +1,48 @@
-# ![Harmony](box-img-sm.png)
+# Hongbao
 
-# Harmony Box
+Hongbao is a web3 ZKP application that anyone can setup a donation campaign while keeping the donors’ activities completely anonymous. 
+ 
+## Problem Statement
 
-Harmony Box is a Truffle box that will get you quickly up and running deploying smart contracts on Harmony using Truffle & native Ethereum tooling.
+When people ask friends to do a favor on emergent finance need (for example: curing a disease) or organize a group giving (for example: wedding wish list). Such donation activities are done publicly, i.e., the requester and (probably) the donators can see who and how much each friend donate. This causes social pressure on some friends, who for some reason, may either don’t want to give or can’t afford the amount other friends give. It also introduces unhealthy competition environment and encourage displaying of loyalty by money.
 
-## Getting started
+## ZK Solution
 
-### Truffle
+The application is based on [Tornado.cash](https://github.com/tornadocash/tornado-core) source code with the migrations to latest circom (2.0.3) and snarkjs (0.4.16). Asker uses this app to setup a campaign, then send the campaign link to friends via social network. Her friends can then follow the link to transfer fund anonymously. The requester can see how many people and how much in total made to this campaign but can never find out individual donation (who and by how much).
 
-If you have Truffle installed globally:
+Technically, Hongbao uses zkSnarks to shield fund transfer, thus hides donors’ activity. 
 
-(Until the box has been approved by Truffle you have to rely on the git installation step below)
+## Component
 
-```
-mkdir harmony && cd harmony
-truffle unbox harmony
-```
+- Hongbao-core: zkSnark circuits and smart contracts that compose the core logic of this applicatin.
+- Hongbao-UI (under development): a ReactJs based web application.
+- Hongbao-relayer (under development): relay withdraw request (with zk-proof) to campaign.
 
-Or if you want to install via git:
+## Requirements
 
-```
-git clone https://github.com/harmony-one/harmony-box.git
-cd harmony-box
-```
+1. `node v14+`
+2. `circom 2.0.3`
 
-### .env
+## Local Setup & Test
 
-Copy .env-example to .env:
+1. `cp .env.example .env` and change the parameters accordingly
+1. `npm run build`
+1. `npm run test`
 
-```
-cp .env-example .env
-```
+## 
+## Harmony Deployment
 
-Modify .env and replace "`ENTER_PRIVATE_KEY_HERE`" for each network with the respective private key you want to use when deploying contracts.
+### TestNet
 
-### Dependencies
+`npm run migrate:test`
 
-Install all required dependencies using yarn:
+#### Already Deployed
+1. Verifier: `0x79D4F93F7b32cC36E40f27Ca182d67992dCbfa6a`
+1. Hasher: `0x425089477576De6Fb35AC51820e7B250361F566c`
+1. ETHTornado: `0x4731EA3241bbF369Cc4A4EC1382f85a03A9b2A7f`
+1. CampaignManager: `0x0DaFFB58B0Bb80e592b15766eDF2EB8CCB846E0C`
 
-```
-yarn install
-```
 
-The dependencies installed are the following:
+### MainNet
 
-- truffle: if you want to use a local installation rather than a global installation
-- solc: Solidity compiler
-- @trufflesuite/web3-provider-engine: framework for composing custom web3 providers
-- ethereumjs-wallet: a lightweight Ethereum wallet implementation
-- @openzeppelin/contracts: industry standard smart contract templates
-- dotenv: .env file parsing library
-
-## Compilation
-
-Globally installed Truffle:
-```
-truffle compile
-```
-
-Locally installed Truffle:
-```
-node_modules/.bin/truffle compile
-```
-
-## Migration
-
-The Harmony Box comes pre-configured with three separate networks:
-
-- Localnet (http://localhost:9500)
-- Testnet (https://api.s0.b.hmny.io)
-- Mainnet (https://api.s0.t.hmny.io)
-
-To deploy your contracts to these networks, you can run the following:
-
-Globally installed Truffle:
-```
-truffle migrate --reset --skip-dry-run --network localnet
-truffle migrate --reset --skip-dry-run --network testnet
-truffle migrate --reset --skip-dry-run --network mainnet
-```
-
-Locally installed Truffle:
-```
-node_modules/.bin/truffle migrate --reset --skip-dry-run --network localnet
-node_modules/.bin/truffle migrate --reset --skip-dry-run --network testnet
-node_modules/.bin/truffle migrate --reset --skip-dry-run --network mainnet
-```
-
-## Testing
-
-Globally installed Truffle:
-```
-truffle test
-```
-
-Locally installed Truffle:
-```
-node_modules/.bin/truffle test
-```
-
-## Attribution
-
-[private-provider.js](private-provider.js) was originally ported from [Moonbeam's Truffle Box](https://github.com/PureStake/moonbeam-truffle-box/blob/db2f86516c1063b6bf56050e950b7ad67b500fe5/private-provider.js).
+`npm run migrate:mainnet`
