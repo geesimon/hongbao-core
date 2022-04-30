@@ -6,7 +6,7 @@
     "build:circuit:setup": "sh scripts/genCircuitKey.sh",
     "build:circuit": "mkdir -p build/circuits && npm run build:circuit:compile && npm run build:circuit:setup",
     "build:contract": "npx truffle compile && node scripts/compileHasher.js ",
-    "build": "npm run build:circuit && npm run build:contract && npm run build:browserify",
+    "build": "npm run build:circuit && npm run build:contract",
     "test": "npx truffle test",
     "migrate": "npm run migrate:kovan",
     "migrate:dev": "npx truffle migrate --network development --reset",
