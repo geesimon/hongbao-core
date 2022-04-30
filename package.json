@@ -10,7 +10,7 @@
     "test": "npx truffle test",
     "migrate": "npm run migrate:kovan",
     "migrate:dev": "npx truffle migrate --network development --reset",
-    "migrate:test": "npx truffle migrate --testnet development --reset",
+    "migrate:test": "npx truffle migrate --network testnet --reset",
     "migrate:kovan": "npx truffle migrate --network kovan --reset",
     "migrate:rinkeby": "npx truffle migrate --network rinkeby --reset",
     "migrate:mainnet": "npx truffle migrate --network mainnet"
