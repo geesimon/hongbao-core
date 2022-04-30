@@ -13,7 +13,7 @@ interface IVerifier {
         ) external view returns (bool r);
 }
 
-abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
+abstract contract Hongbao is MerkleTreeWithHistory, ReentrancyGuard {
   IVerifier public immutable verifier;
   uint256 public immutable denomination;
 

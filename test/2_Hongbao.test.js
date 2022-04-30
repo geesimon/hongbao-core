@@ -7,7 +7,7 @@ const { toBN } = require('web3-utils');
 
 const Hasher = artifacts.require("Hasher");
 const Verifier = artifacts.require('Verifier');
-const ETHTornado = artifacts.require("ETHTornado");
+const ETHHongbao = artifacts.require("ETHHongbao");
 const CampaignManager = artifacts.require("CampaignManager");
 const { ETH_AMOUNT, MERKLE_TREE_HEIGHT } = process.env;
 
@@ -22,7 +22,7 @@ const MerkleTree = require('fixed-merkle-tree').MerkleTree;
 const wasm_tester = require("circom_tester").wasm;
 
 
-contract('ETHTornado Test', accounts => {    
+contract('ETHHongbao Test', accounts => {    
   const FIELD_SIZE = bigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617');
   const ZERO_VALUE = bigInt('8568824596295711272276493421173227402986947053170746004488571001319888434851').value; // = keccak256("hongbao") % FIELD_SIZE
   const FEE = bigInt(ETH_AMOUNT).shiftRight(2) || bigInt(1e18);
@@ -34,7 +34,7 @@ contract('ETHTornado Test', accounts => {
   const SEND_VALUE = ETH_AMOUNT || '1000000000000000000'; // 1 ether
 
   //Global variables
-  let globalTornado;
+  let globalHongbao;
   let globalTree;
   let verification_key;
   let snapshotId;
@@ -83,7 +83,7 @@ contract('ETHTornado Test', accounts => {
     pedersenHasher = (data) => babyJub.F.toObject(babyJub.unpackPoint(pedersenHash.hash(data))[0]);
     mimcHasher = (left, right) => mimcSponge.F.toObject(mimcSponge.hash(left, right, 0).xL);
 
-    globalTornado = await ETHTornado.new(
+    globalHongbao = await ETHHongbao.new(
                                   Verifier.address,
                                   Hasher.address,
                                   SEND_VALUE,
@@ -96,14 +96,14 @@ contract('ETHTornado Test', accounts => {
 
   describe('#constructor', () => {
     it('should initialize', async () => {
-      const etherDenomination = await globalTornado.denomination();
+      const etherDenomination = await globalHongbao.denomination();
       etherDenomination.should.be.eq.BN(SEND_VALUE);
     })
   })
   describe('#deposit', () => {
     it('should emit event', async () => {
       let commitment = toFixedHex(42);
-      let { logs } = await globalTornado.deposit(commitment, { value: SEND_VALUE, from: SENDER });
+      let { logs } = await globalHongbao.deposit(commitment, { value: SEND_VALUE, from: SENDER });
       globalTree.insert(commitment);
 
       logs[0].event.should.be.equal('Deposit');
@@ -111,7 +111,7 @@ contract('ETHTornado Test', accounts => {
       logs[0].args.leafIndex.should.be.eq.BN(0);
 
       commitment = toFixedHex(12);
-      ;({ logs } = await globalTornado.deposit(commitment, {value: SEND_VALUE, from: accounts[2] }))
+      ;({ logs } = await globalHongbao.deposit(commitment, {value: SEND_VALUE, from: accounts[2] }))
       globalTree.insert(commitment);
 
       logs[0].event.should.be.equal('Deposit');
@@ -121,11 +121,11 @@ contract('ETHTornado Test', accounts => {
 
     it('should throw if there is a such commitment', async () => {
       const commitment = toFixedHex(33);
-      await globalTornado.deposit(commitment, { value: SEND_VALUE, from: SENDER })
+      await globalHongbao.deposit(commitment, { value: SEND_VALUE, from: SENDER })
             .should.be.fulfilled;
       globalTree.insert(commitment);
 
-      await globalTornado.deposit(commitment, { value: SEND_VALUE, from: SENDER })
+      await globalHongbao.deposit(commitment, { value: SEND_VALUE, from: SENDER })
             .should.be.rejectedWith('The commitment has been submitted');
     })
   })
@@ -195,18 +195,18 @@ contract('ETHTornado Test', accounts => {
         globalTree.insert(deposit.commitment);
   
         // const gasPrice = await web3.eth.getGasPrice();
-        // let gas = await globalTornado.deposit.estimateGas(toFixedHex(deposit.commitment), {SEND_VALUE, from: SENDER});
+        // let gas = await globalHongbao.deposit.estimateGas(toFixedHex(deposit.commitment), {SEND_VALUE, from: SENDER});
         // let gasCost = bigInt(gas).multiply(gasPrice);
         // console.log('gasCost:', gasCost);
 
         // Deposit and check balance
-        let balanceTornadoBefore = await web3.eth.getBalance(globalTornado.address);
+        let balanceHongbaoBefore = await web3.eth.getBalance(globalHongbao.address);
         let balanceSenderBefore = await web3.eth.getBalance(SENDER.toString());
-        await globalTornado.deposit(toFixedHex(deposit.commitment), { value:SEND_VALUE, from: SENDER}); 
-        let balanceTornadoAfter = await web3.eth.getBalance(globalTornado.address);
+        await globalHongbao.deposit(toFixedHex(deposit.commitment), { value:SEND_VALUE, from: SENDER}); 
+        let balanceHongbaoAfter = await web3.eth.getBalance(globalHongbao.address);
         let balanceSenderAfter = await web3.eth.getBalance(SENDER.toString());
         
-        balanceTornadoAfter.should.be.eq.BN(toBN(balanceTornadoBefore).add(toBN(SEND_VALUE)));
+        balanceHongbaoAfter.should.be.eq.BN(toBN(balanceHongbaoBefore).add(toBN(SEND_VALUE)));
         balanceSenderAfter.should.be.lt.BN(toBN(balanceSenderBefore).sub(toBN(SEND_VALUE))); // new_balance = previous_balance - send_amount - gas
   
         // Prepare proof
@@ -234,7 +234,7 @@ contract('ETHTornado Test', accounts => {
         // result.should.be.equal(true);
         // console.log(publicSignals);
         
-        let isSpent = await globalTornado.isSpent(toFixedHex(input.nullifierHash));
+        let isSpent = await globalHongbao.isSpent(toFixedHex(input.nullifierHash));
         isSpent.should.be.equal(false);
 
         // const pubString = unstringifyBigInts(publicSignals);
@@ -254,17 +254,17 @@ contract('ETHTornado Test', accounts => {
         // console.log("proof data:", proofData);
         // console.log("public inputs:", publicSignals)          
 
-        balanceTornadoBefore = await web3.eth.getBalance(globalTornado.address);
+        balanceHongbaoBefore = await web3.eth.getBalance(globalHongbao.address);
         const balanceRelayerBefore = await web3.eth.getBalance(RELAYER.toString());
         const balanceReceiverBefore = await web3.eth.getBalance(toFixedHex(recipient, 20));
 
-        const { logs } = await globalTornado.withdraw(proofData, publicSignals, { from: RELAYER});
+        const { logs } = await globalHongbao.withdraw(proofData, publicSignals, { from: RELAYER});
        
-        balanceTornadoAfter = await web3.eth.getBalance(globalTornado.address);
+        balanceHongbaoAfter = await web3.eth.getBalance(globalHongbao.address);
         const balanceRelayerAfter = await web3.eth.getBalance(RELAYER.toString());
         const balanceReceiverAfter = await web3.eth.getBalance(toFixedHex(recipient, 20));
         const feeBN = toBN(FEE.toString());
-        balanceTornadoAfter.should.be.eq.BN(toBN(balanceTornadoBefore).sub(toBN(SEND_VALUE)));
+        balanceHongbaoAfter.should.be.eq.BN(toBN(balanceHongbaoBefore).sub(toBN(SEND_VALUE)));
         balanceRelayerAfter.should.be.gt.BN(toBN(balanceRelayerBefore));  
         balanceReceiverAfter.should.be.gt.BN(toBN(balanceReceiverBefore));
   
@@ -274,13 +274,13 @@ contract('ETHTornado Test', accounts => {
         logs[0].args.fee.should.be.eq.BN(feeBN)
 
         //Check the commitment is spent
-        isSpent = await globalTornado.isSpent(toFixedHex(input.nullifierHash))
+        isSpent = await globalHongbao.isSpent(toFixedHex(input.nullifierHash))
         isSpent.should.be.equal(true)
     })
     it('should prevent double spend', async () => {
       const deposit = generateDeposit(pedersenHasher);
       globalTree.insert(deposit.commitment);
-      await globalTornado.deposit(toFixedHex(deposit.commitment), { value: SEND_VALUE, from: SENDER });
+      await globalHongbao.deposit(toFixedHex(deposit.commitment), { value: SEND_VALUE, from: SENDER });
 
       const { pathElements, pathIndices } = globalTree.proof(deposit.commitment);
 
@@ -303,9 +303,9 @@ contract('ETHTornado Test', accounts => {
         );
       
       const proofData = packProofData(proof);
-      await globalTornado.withdraw(proofData, publicSignals, { from: RELAYER}).should.be.fulfilled;
+      await globalHongbao.withdraw(proofData, publicSignals, { from: RELAYER}).should.be.fulfilled;
 
-      await globalTornado.withdraw(proofData, publicSignals, { from: RELAYER }).
+      await globalHongbao.withdraw(proofData, publicSignals, { from: RELAYER }).
                     should.be.rejectedWith('The note has been already spent');
     })
   })

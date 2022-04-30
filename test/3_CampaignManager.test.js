@@ -8,7 +8,7 @@ const { toBN } = require('web3-utils');
 
 const Hasher = artifacts.require("Hasher");
 const Verifier = artifacts.require('Verifier');
-const ETHTornado = artifacts.require("ETHTornado");
+const ETHHongbao = artifacts.require("ETHHongbao");
 const CampaignManager = artifacts.require("CampaignManager");
 const Campaign = artifacts.require("Campaign");
 const { ETH_AMOUNT, MERKLE_TREE_HEIGHT } = process.env;
@@ -71,14 +71,14 @@ contract ('CampainManager Test', accounts =>{
       mimcHasher = (left, right) => mimcSponge.F.toObject(mimcSponge.hash(left, right, 0).xL);
 
       // campaignManager = await CampaignManager.deployed();
-      globalTornado = await ETHTornado.new(
+      globalHongbao = await ETHHongbao.new(
                                 Verifier.address,
                                 Hasher.address,
                                 SEND_VALUE,
                                 TREE_LEVELS,
                                 {from: OPERATOR}
                                 );
-      campaignManager = await CampaignManager.new([globalTornado.address]);
+      campaignManager = await CampaignManager.new([globalHongbao.address]);
 
       globalTree = new MerkleTree(TREE_LEVELS, [], { hashFunction: mimcHasher, zeroElement: ZERO_VALUE});      
     });
@@ -107,7 +107,7 @@ contract ('CampainManager Test', accounts =>{
         const balanceSenderBefore = await web3.eth.getBalance(SENDER);
 
         globalTree.insert(deposit.commitment);
-        await globalTornado.deposit(toFixedHex(deposit.commitment), { value: SEND_VALUE, from: SENDER });
+        await globalHongbao.deposit(toFixedHex(deposit.commitment), { value: SEND_VALUE, from: SENDER });
         
         const balanceSenderAfter = await web3.eth.getBalance(SENDER);
         balanceSenderAfter.should.be.lt.BN(balanceSenderBefore.sub(SEND_VALUE));
@@ -135,7 +135,7 @@ contract ('CampainManager Test', accounts =>{
         const proofData = packProofData(proof);
 
         let balanceRecipientBefore = await web3.eth.getBalance(recipient);
-        await globalTornado.withdraw(proofData, publicSignals, {from: RELAYER});
+        await globalHongbao.withdraw(proofData, publicSignals, {from: RELAYER});
 
         const feeBN = toBN(FEE.toString());
         let balanceRecipientAfter = await web3.eth.getBalance(recipient);        

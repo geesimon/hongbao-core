@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./Tornado.sol";
+import "./Hongbao.sol";
 
-contract ETHTornado is Tornado {
+contract ETHHongbao is Hongbao {
   constructor(
     IVerifier _verifier,
     IHasher _hasher,
     uint256 _denomination,
     uint32 _merkleTreeHeight
-  ) Tornado(_verifier, _hasher, _denomination, _merkleTreeHeight) {}
+  ) Hongbao(_verifier, _hasher, _denomination, _merkleTreeHeight) {}
 
   function _processDeposit() internal override {
     require(msg.value == denomination, "Please send `mixDenomination` ETH along with transaction");

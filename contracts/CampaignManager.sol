@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import './Campaign.sol';
 
-interface ITornado {
+interface IHongbao {
     function deposit(bytes32 _commitment) external payable;
     function withdraw(
         uint256[8] calldata _proofData,
@@ -14,7 +14,7 @@ interface ITornado {
 }
 
 contract CampaignManager {
-    ITornado[] public tornados;
+    IHongbao[] public hongbaos;
 
     struct CampaignStruct {
         address campaignContract;
@@ -28,9 +28,9 @@ contract CampaignManager {
     mapping(uint256 => CampaignStruct) campaigns;
 
     constructor(
-        ITornado[] memory _tornados
+        IHongbao[] memory _hongbaos
     ) {
-        tornados = _tornados;
+        hongbaos = _hongbaos;
     }
 
     function createCampaign (string memory _name, 
