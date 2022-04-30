@@ -29,7 +29,10 @@ Technically, Hongbao uses zkSnarks to shield fund transfer, thus hides donors’
 1. `npm run build`
 1. `npm run test`
 
-## 
+## Usage
+
+Please check [test cases](https://github.com/geesimon/hongbao-core/blob/main/test/3_CampaignManager.test.js)
+
 ## Harmony Deployment
 
 ### TestNet
