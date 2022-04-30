@@ -6,20 +6,14 @@
     "build:circuit:setup": "sh scripts/genCircuitKey.sh",
     "build:circuit": "mkdir -p build/circuits && npm run build:circuit:compile && npm run build:circuit:setup",
     "build:contract": "npx truffle compile && node scripts/compileHasher.js ",
-    "build:browserify": "npx browserify src/cli.js -o index.js --exclude worker_threads",
     "build": "npm run build:circuit && npm run build:contract && npm run build:browserify",
-    "browserify": "npm run build:browserify",
     "test": "npx truffle test",
     "migrate": "npm run migrate:kovan",
     "migrate:dev": "npx truffle migrate --network development --reset",
+    "migrate:test": "npx truffle migrate --testnet development --reset",
     "migrate:kovan": "npx truffle migrate --network kovan --reset",
     "migrate:rinkeby": "npx truffle migrate --network rinkeby --reset",
-    "migrate:mainnet": "npx truffle migrate --network mainnet",
-    "eslint": "eslint --ext .js --ignore-path .gitignore .",
-    "prettier:check": "prettier --check . --config .prettierrc",
-    "prettier:fix": "prettier --write . --config .prettierrc",
-    "lint": "yarn eslint && yarn prettier:check",
-    "coverage": "yarn truffle run coverage"
+    "migrate:mainnet": "npx truffle migrate --network mainnet"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.6.0",

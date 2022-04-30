@@ -16,6 +16,5 @@ module.exports = function (deployer) {
       ETH_AMOUNT,
       MERKLE_TREE_HEIGHT,
     )
-    console.log('ETHTornado address', tornado.address)
   })
 }

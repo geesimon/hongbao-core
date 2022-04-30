@@ -15,7 +15,7 @@ interface IVerifier {
 
 abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
   IVerifier public immutable verifier;
-  uint256 public denomination;
+  uint256 public immutable denomination;
 
   mapping(bytes32 => bool) public nullifierHashes;
   // we store all commitments just to prevent accidental deposits with the same commitment
@@ -67,21 +67,11 @@ abstract contract Tornado is MerkleTreeWithHistory, ReentrancyGuard {
       - the recipient of funds
       - optional fee that goes to the transaction sender (usually a relay)
     @param  _proofData: zkSNARK proof _pi_a, _pi_b, _pic
-            _publicInputs: [root, nullifierHash, recipient, relayer, fee, refund]
+    @param  _publicInputs: [root, nullifierHash, recipient, relayer, fee, refund]
   **/
   function withdraw(
-    uint256[8] memory _proofData,
-    // uint[2] memory _pi_a,
-    // uint[2][2] memory _pi_b,
-    // uint[2] memory _pi_c,
-    uint256[6] memory _publicInputs
-    // bytes calldata _proof,
-    // bytes32 _root,
-    // bytes32 _nullifierHash,
-    // address payable _recipient,
-    // address payable _relayer,
-    // uint256 _fee,
-    // uint256 _refund
+    uint256[8] calldata _proofData,
+    uint256[6] calldata _publicInputs
   ) external payable nonReentrant{
     
     require(_publicInputs[4] <= denomination, "Fee exceeds transfer value");
