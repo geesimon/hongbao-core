@@ -154,7 +154,7 @@ contract('ETHHongbao Test', accounts => {
                       fee: FEE.toString(),
                       refund: REFUND.toString(),
                     };
-      // console.log(input)
+      console.log(input)
 
       const {proof, publicSignals} = await snarkjs.groth16.fullProve(
                                                     input,
