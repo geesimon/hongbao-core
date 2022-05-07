@@ -1,4 +1,9 @@
 #!/bin/bash -e
+mkdir -p build/circuits
+
+# Compile circuit
+circom circuits/withdraw.circom --r1cs --wasm --output build/circuits
+
 cd build/circuits
 
 # Download Power of Tau
