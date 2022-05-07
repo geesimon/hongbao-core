@@ -27,7 +27,8 @@ Technically, Hongbao uses zkSnarks to shield fund transfer, thus hides donors’
 
 1. `cp .env.example .env` and change the parameters accordingly
 1. `npm run build`
-1. `npm run test`
+1. `npx truffle develop`
+3. `test`
 
 ## Usage
 
