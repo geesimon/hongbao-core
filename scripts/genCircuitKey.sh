@@ -40,6 +40,7 @@ sed -i 's/0.6.11/0.8.0/g' Verifier.sol
 
 # Copy outputs
 cp circuit_withdraw_final.zkey ../../support
+cp withdraw_verification_key.json ../../support
 cp ./withdraw_js/withdraw.wasm ../../support
 cp Verifier.sol ../../contracts
 
