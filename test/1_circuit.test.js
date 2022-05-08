@@ -30,7 +30,7 @@ const calcCommitmentNullifierHash = (_nullifier, _secret) => {
     }
 };
 
-describe("Commitment Hasher Test", function() {
+describe("Circuit commitment Hasher Test", function() {
     this.timeout(100000);
 
     let commitmentHasherCircuit;
@@ -74,7 +74,7 @@ describe("Commitment Hasher Test", function() {
 });
 
 
-describe("Merkle Tree Test", function() {
+describe("Circuit Merkle Tree Test", function() {
     this.timeout(300000);
     
     let merkleTreeCircuit;
@@ -120,7 +120,7 @@ describe("Merkle Tree Test", function() {
         }
     });
 
-    describe("Withdraw Test", function () {
+    describe("Circuit withdrawal Test", function () {
         this.timeout(600000);
 
         let withdrawCircuit;

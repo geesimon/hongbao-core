@@ -16,7 +16,10 @@ const { ETH_AMOUNT, MERKLE_TREE_HEIGHT } = process.env;
 const snarkjs = require('snarkjs');
 const bigInt = require("big-integer");
 const circomlibjs = require('circomlibjs');
-const bigInt2BytesLE = require('wasmsnark/src/utils.js').bigInt2BytesLE
+const bigInt2BytesLE = require('wasmsnark/src/utils.js').bigInt2BytesLE;
+
+const CircuitWASMFile = "./support/withdraw.wasm";
+const CircuitKey = "./support/circuit_withdraw_final.zkey";
 
 // const MerkleTree = require('fixed-merkle-tree').MerkleTree;
 
@@ -134,8 +137,8 @@ contract ('CampainManager Test', accounts =>{
         };
         const {proof, publicSignals} = await snarkjs.groth16.fullProve(
                                                                 input,
-                                                                "./build/circuits/withdraw_js/withdraw.wasm",
-                                                                "./build/circuits/circuit_withdraw_final.zkey"
+                                                                CircuitWASMFile,
+                                                                CircuitKey
                                                                 );
         
         const proofData = packProofData(proof);

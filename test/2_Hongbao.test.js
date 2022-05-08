@@ -21,11 +21,16 @@ const bigInt2BytesLE = require('wasmsnark/src/utils.js').bigInt2BytesLE
 const MerkleTree = require('fixed-merkle-tree').MerkleTree;
 const wasm_tester = require("circom_tester").wasm;
 
+const CircuitWASMFile = "./support/withdraw.wasm";
+const CircuitKey = "./support/circuit_withdraw_final.zkey";
+
 const bits2PathIndices = (_bitmap, _length) => {
   const bits = Number(_bitmap).toString(2).split('').map(b => b - '0');
   
   return Array(_length - bits.length).fill(0).concat(bits)
 }
+
+
 
 contract('ETHHongbao Test', accounts => {    
   const FIELD_SIZE = bigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617');
@@ -182,8 +187,8 @@ contract('ETHHongbao Test', accounts => {
 
       const {proof, publicSignals} = await snarkjs.groth16.fullProve(
                                                     input,
-                                                    "./build/circuits/withdraw_js/withdraw.wasm",
-                                                    "./build/circuits/circuit_withdraw_final.zkey"
+                                                    CircuitWASMFile,
+                                                    CircuitKey
                                                     );
       
 
@@ -254,9 +259,9 @@ contract('ETHHongbao Test', accounts => {
         };
 
         const {proof, publicSignals} = await snarkjs.groth16.fullProve(
-                                                                      input,
-                                                                      "./build/circuits/withdraw_js/withdraw.wasm",
-                                                                      "./build/circuits/circuit_withdraw_final.zkey"
+                                                                        input,
+                                                                        CircuitWASMFile,
+                                                                        CircuitKey
                                                                       );
         // let result = await snarkjs.groth16.verify(verification_key, publicSignals, proof);
         // result.should.be.equal(true);
@@ -328,11 +333,10 @@ contract('ETHHongbao Test', accounts => {
         refund: REFUND.toString(),
       };
       const {proof, publicSignals} = await snarkjs.groth16.fullProve(
-        input,
-        "./build/circuits/withdraw_js/withdraw.wasm",
-        "./build/circuits/circuit_withdraw_final.zkey"
-        );
-      
+                                                                      input,
+                                                                      CircuitWASMFile,
+                                                                      CircuitKey
+                                                                    );
       const proofData = packProofData(proof);
       await globalHongbao.withdraw(proofData, publicSignals, { from: RELAYER}).should.be.fulfilled;
 
