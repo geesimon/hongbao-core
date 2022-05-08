@@ -23,6 +23,7 @@ const wasm_tester = require("circom_tester").wasm;
 
 const CircuitWASMFile = "./support/withdraw.wasm";
 const CircuitKey = "./support/circuit_withdraw_final.zkey";
+const CircuitVerificationKey = "./support/withdraw_verification_key.json"
 
 const bits2PathIndices = (_bitmap, _length) => {
   const bits = Number(_bitmap).toString(2).split('').map(b => b - '0');
@@ -119,7 +120,7 @@ contract('ETHHongbao Test', accounts => {
                                   {from: OPERATOR}
                                 );
     globalTree = new MerkleTree(TREE_LEVELS, [], { hashFunction: mimcHasher, zeroElement: ZERO_VALUE});
-    verification_key = JSON.parse(fs.readFileSync('build/circuits/withdraw_verification_key.json'));
+    verification_key = JSON.parse(fs.readFileSync(CircuitVerificationKey));
   })
 
   describe('#constructor', () => {
