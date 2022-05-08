@@ -61,23 +61,35 @@ contract MerkleTreeWithHistory {
     return bytes32(hashValue);
   }
 
-  function _insert(bytes32 _leaf) internal returns (uint32 index) {
+  function _insert(bytes32 _leaf) internal returns (bytes32 root,
+                                                    uint32 _index,
+                                                    bytes32[] memory _pathElements,
+                                                    uint32 _pathIndices) {
     uint32 _nextIndex = nextIndex;
     require(_nextIndex != uint32(2)**levels, "Merkle tree is full. No more leaves can be added");
     uint32 currentIndex = _nextIndex;
     bytes32 currentLevelHash = _leaf;
     bytes32 left;
     bytes32 right;
+    bytes32[] memory pathElements = new bytes32[](levels);
+    uint32 pathIndices = 0;
 
     for (uint32 i = 0; i < levels; i++) {
       if (currentIndex % 2 == 0) {
         left = currentLevelHash;
         right = zeros(i);
         filledSubtrees[i] = currentLevelHash;
+
+        pathElements[i] =  right;
+        pathIndices = pathIndices << 1;
       } else {
         left = filledSubtrees[i];
         right = currentLevelHash;
+
+        pathElements[i] =  left;
+        pathIndices = (pathIndices << 1) + 1;
       }
+
       currentLevelHash = hashLeftRight(hasher, left, right);
       currentIndex /= 2;
     }
@@ -86,11 +98,8 @@ contract MerkleTreeWithHistory {
     currentRootIndex = newRootIndex;
     roots[newRootIndex] = currentLevelHash;
     nextIndex = _nextIndex + 1;
-    return _nextIndex;
-  }
 
-  function insert(bytes32 _leaf) external returns (uint32 index) {
-    return _insert(_leaf);
+    return (currentLevelHash, _nextIndex, pathElements, pathIndices);
   }
 
   function mimcHash(uint256 left, uint256 right) external view returns (bytes32) {

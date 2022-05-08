@@ -21,7 +21,8 @@ abstract contract Hongbao is MerkleTreeWithHistory, ReentrancyGuard {
   // we store all commitments just to prevent accidental deposits with the same commitment
   mapping(bytes32 => bool) public commitments;
 
-  event Deposit(bytes32 indexed commitment, uint32 leafIndex, uint256 timestamp);
+  event Deposit(bytes32 indexed commitment, bytes32 root, uint32 leafIndex, 
+                bytes32[] pathElements, uint32 pathIndices,uint256 timestamp);
   event Withdrawal(address to, bytes32 nullifierHash, address indexed relayer, uint256 fee);
 
   /**
@@ -49,11 +50,17 @@ abstract contract Hongbao is MerkleTreeWithHistory, ReentrancyGuard {
   function deposit(bytes32 _commitment) external payable nonReentrant {
     require(!commitments[_commitment], "The commitment has been submitted");
 
-    uint32 insertedIndex = _insert(_commitment);
+    ( 
+      bytes32 root,
+      uint32 leafIndex,  
+      bytes32[] memory pathElements,
+      uint32 pathIndices
+    ) = _insert(_commitment);
+
     commitments[_commitment] = true;
     _processDeposit();
 
-    emit Deposit(_commitment, insertedIndex, block.timestamp);
+    emit Deposit(_commitment, root, leafIndex, pathElements, pathIndices, block.timestamp);
   }
 
   /** @dev this function is defined in a child contract */

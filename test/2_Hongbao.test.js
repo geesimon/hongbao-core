@@ -21,6 +21,11 @@ const bigInt2BytesLE = require('wasmsnark/src/utils.js').bigInt2BytesLE
 const MerkleTree = require('fixed-merkle-tree').MerkleTree;
 const wasm_tester = require("circom_tester").wasm;
 
+const bits2PathIndices = (_bitmap, _length) => {
+  const bits = Number(_bitmap).toString(2).split('').map(b => b - '0');
+  
+  return Array(_length - bits.length).fill(0).concat(bits)
+}
 
 contract('ETHHongbao Test', accounts => {    
   const FIELD_SIZE = bigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617');
@@ -75,6 +80,24 @@ contract('ETHHongbao Test', accounts => {
     ]
   };
 
+  const verifyMerklePath = (merkleTree, treeLevel, commitment, callLog) => {
+    callLog.event.should.be.equal('Deposit');
+    callLog.args.commitment.should.be.equal(toFixedHex(commitment));
+    callLog.args.root.should.be.equal(toFixedHex(merkleTree.root));
+
+    const {pathElements, pathIndices} = merkleTree.proof(commitment);
+    const contractPathIndices = bits2PathIndices(Number(callLog.args.pathIndices), treeLevel);
+    // console.log(contractPathIndices, pathIndices)
+    pathIndices.join().should.be.equal(contractPathIndices.join());
+
+    callLog.args.pathElements.forEach((n, k) => {
+      let n1 = bigInt(n.slice(2), 16).toString()
+      let n2 = bigInt(pathElements[k]).toString();
+      // console.log("tree:", n1, "contract:", n2);
+      n1.should.be.equal(n2);
+    })
+  }
+
   before(async () => {
     let pedersenHash = await circomlibjs.buildPedersenHash();
     let babyJub = await circomlibjs.buildBabyjub();
@@ -102,30 +125,31 @@ contract('ETHHongbao Test', accounts => {
   })
   describe('#deposit', () => {
     it('should emit event', async () => {
-      let commitment = toFixedHex(42);
-      let { logs } = await globalHongbao.deposit(commitment, { value: SEND_VALUE, from: SENDER });
+      let commitment = bigInt(42);
+      let { logs } = await globalHongbao.deposit(toFixedHex(commitment), { value: SEND_VALUE, from: SENDER });
       globalTree.insert(commitment);
+      verifyMerklePath(globalTree, TREE_LEVELS, commitment, logs[0]);
+      // logs[0].event.should.be.equal('Deposit');
+      // logs[0].args.commitment.should.be.equal(commitment);
+      // logs[0].args.leafIndex.should.be.eq.BN(0);
 
-      logs[0].event.should.be.equal('Deposit');
-      logs[0].args.commitment.should.be.equal(commitment);
-      logs[0].args.leafIndex.should.be.eq.BN(0);
-
-      commitment = toFixedHex(12);
-      ;({ logs } = await globalHongbao.deposit(commitment, {value: SEND_VALUE, from: accounts[2] }))
+      commitment = bigInt(12);
+      ;({ logs } = await globalHongbao.deposit(toFixedHex(commitment), {value: SEND_VALUE, from: accounts[2] }))
       globalTree.insert(commitment);
+      verifyMerklePath(globalTree, TREE_LEVELS, commitment, logs[0]);
 
-      logs[0].event.should.be.equal('Deposit');
-      logs[0].args.commitment.should.be.equal(commitment);
-      logs[0].args.leafIndex.should.be.eq.BN(1);
+      // logs[0].event.should.be.equal('Deposit');
+      // logs[0].args.commitment.should.be.equal(commitment);
+      // logs[0].args.leafIndex.should.be.eq.BN(1);
     })
 
     it('should throw if there is a such commitment', async () => {
-      const commitment = toFixedHex(33);
-      await globalHongbao.deposit(commitment, { value: SEND_VALUE, from: SENDER })
-            .should.be.fulfilled;
+      const commitment = bigInt(33);
+      let { logs } = await globalHongbao.deposit(toFixedHex(commitment), { value: SEND_VALUE, from: SENDER });
       globalTree.insert(commitment);
+      verifyMerklePath(globalTree, TREE_LEVELS, commitment, logs[0]);
 
-      await globalHongbao.deposit(commitment, { value: SEND_VALUE, from: SENDER })
+      await globalHongbao.deposit(toFixedHex(commitment), { value: SEND_VALUE, from: SENDER })
             .should.be.rejectedWith('The commitment has been submitted');
     })
   })
@@ -154,7 +178,7 @@ contract('ETHHongbao Test', accounts => {
                       fee: FEE.toString(),
                       refund: REFUND.toString(),
                     };
-      console.log(input)
+      // console.log(input)
 
       const {proof, publicSignals} = await snarkjs.groth16.fullProve(
                                                     input,
@@ -193,7 +217,7 @@ contract('ETHHongbao Test', accounts => {
     it('should work', async () => {
         const deposit = generateDeposit(pedersenHasher);
         globalTree.insert(deposit.commitment);
-  
+          
         // const gasPrice = await web3.eth.getGasPrice();
         // let gas = await globalHongbao.deposit.estimateGas(toFixedHex(deposit.commitment), {SEND_VALUE, from: SENDER});
         // let gasCost = bigInt(gas).multiply(gasPrice);
@@ -202,7 +226,11 @@ contract('ETHHongbao Test', accounts => {
         // Deposit and check balance
         let balanceHongbaoBefore = await web3.eth.getBalance(globalHongbao.address);
         let balanceSenderBefore = await web3.eth.getBalance(SENDER.toString());
-        await globalHongbao.deposit(toFixedHex(deposit.commitment), { value:SEND_VALUE, from: SENDER}); 
+        
+        let res = await globalHongbao.deposit(toFixedHex(deposit.commitment), { value:SEND_VALUE, from: SENDER});
+
+        verifyMerklePath(globalTree, TREE_LEVELS, deposit.commitment, res.logs[0]);
+
         let balanceHongbaoAfter = await web3.eth.getBalance(globalHongbao.address);
         let balanceSenderAfter = await web3.eth.getBalance(SENDER.toString());
         
@@ -279,8 +307,11 @@ contract('ETHHongbao Test', accounts => {
     })
     it('should prevent double spend', async () => {
       const deposit = generateDeposit(pedersenHasher);
+
       globalTree.insert(deposit.commitment);
-      await globalHongbao.deposit(toFixedHex(deposit.commitment), { value: SEND_VALUE, from: SENDER });
+      let res = await globalHongbao.deposit(toFixedHex(deposit.commitment), { value: SEND_VALUE, from: SENDER });
+      
+      verifyMerklePath(globalTree, TREE_LEVELS, deposit.commitment, res.logs[0]);      
 
       const { pathElements, pathIndices } = globalTree.proof(deposit.commitment);
 

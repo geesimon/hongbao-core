@@ -18,8 +18,13 @@ const bigInt = require("big-integer");
 const circomlibjs = require('circomlibjs');
 const bigInt2BytesLE = require('wasmsnark/src/utils.js').bigInt2BytesLE
 
-const MerkleTree = require('fixed-merkle-tree').MerkleTree;
+// const MerkleTree = require('fixed-merkle-tree').MerkleTree;
 
+const bits2PathIndices = (_bitmap, _length) => {
+  const bits = Number(_bitmap).toString(2).split('').map(b => b - '0');
+  
+  return Array(_length - bits.length).fill(0).concat(bits)
+}
 
 contract ('CampainManager Test', accounts =>{
     const ZERO_VALUE = bigInt('8568824596295711272276493421173227402986947053170746004488571001319888434851').value; // = keccak256("hongbao") % FIELD_SIZE
@@ -80,7 +85,7 @@ contract ('CampainManager Test', accounts =>{
                                 );
       campaignManager = await CampaignManager.new([globalHongbao.address]);
 
-      globalTree = new MerkleTree(TREE_LEVELS, [], { hashFunction: mimcHasher, zeroElement: ZERO_VALUE});      
+      // globalTree = new MerkleTree(TREE_LEVELS, [], { hashFunction: mimcHasher, zeroElement: ZERO_VALUE});      
     });
   
     describe('#constructor', () => {
@@ -106,21 +111,22 @@ contract ('CampainManager Test', accounts =>{
         const deposit = generateDeposit(pedersenHasher);
         const balanceSenderBefore = await web3.eth.getBalance(SENDER);
 
-        globalTree.insert(deposit.commitment);
-        await globalHongbao.deposit(toFixedHex(deposit.commitment), { value: SEND_VALUE, from: SENDER });
+        // globalTree.insert(deposit.commitment);
+        let { logs } = await globalHongbao.deposit(toFixedHex(deposit.commitment), { value: SEND_VALUE, from: SENDER });
         
         const balanceSenderAfter = await web3.eth.getBalance(SENDER);
         balanceSenderAfter.should.be.lt.BN(balanceSenderBefore.sub(SEND_VALUE));
 
-        const { pathElements, pathIndices } = globalTree.proof(deposit.commitment);
-  
+        // const { pathElements, pathIndices } = globalTree.proof(deposit.commitment);
+        const { root, pathElements, pathIndices } = logs[0].args;        
+
         const input = {
-          root: globalTree.root.toString(),
+          root: root, //globalTree.root.toString(),
           nullifier: deposit.nullifier.toString(),
           nullifierHash: pedersenHasher(bigInt2BytesLE(deposit.nullifier, 31)).toString(),
           secret: deposit.secret.toString(),
           pathElements: pathElements,
-          pathIndices: pathIndices,
+          pathIndices: bits2PathIndices(pathIndices, TREE_LEVELS),
           recipient: recipient,
           relayer: bigInt(RELAYER.slice(2), 16).toString(),
           fee: FEE.toString(),
