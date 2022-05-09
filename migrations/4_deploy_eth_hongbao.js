@@ -1,5 +1,6 @@
 /* global artifacts */
 require('dotenv').config({ path: '../.env' })
+const bigInt = require('big-integer')
 const ETHHongbao = artifacts.require('ETHHongbao')
 const Verifier = artifacts.require('Verifier')
 const Hasher = artifacts.require('Hasher')
@@ -21,21 +22,21 @@ module.exports = function (deployer) {
       ETHHongbao,
       verifier.address,
       hasher.address,
-      (Number(ETH_AMOUNT) * 10).toString(),
+      bigInt(ETH_AMOUNT).multiply(10).toString(),
       MERKLE_TREE_HEIGHT,
     )
     await deployer.deploy(
       ETHHongbao,
       verifier.address,
       hasher.address,
-      (Number(ETH_AMOUNT) * 100).toString(),
+      bigInt(ETH_AMOUNT).multiply(100).toString(),
       MERKLE_TREE_HEIGHT,
     )
     await deployer.deploy(
       ETHHongbao,
       verifier.address,
       hasher.address,
-      (Number(ETH_AMOUNT) * 1000).toString(),
+      bigInt(ETH_AMOUNT).multiply(1000).toString(),
       MERKLE_TREE_HEIGHT,
     )
   })
