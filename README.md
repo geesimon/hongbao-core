@@ -54,3 +54,19 @@ Please check [test cases](https://github.com/geesimon/hongbao-core/blob/main/tes
 ### MainNet
 
 `npm run migrate:mainnet`
+
+#### Already Deployed
+1. Verifier: `0xc4e9076EAb0c7c894fF67EdcA5f204d319B2D61c`
+1. Hasher: `0xC06eBd326696761fCa99a683a69CA164B58Ab848`
+1. ETHHongbao_1: `0x85f179b1763AE933d6B95A8B473889e9d290A784`
+1. ETHHongbao_10: `0x674f5440Aea3679A5567dFE3c621131Da427605B`
+1. ETHHongbao_100: `0x79670b9EBCcb8c562F0e42c46EE8086726F9B93D`
+1. ETHHongbao_1000: `0x56A67a9933EC75d47E29c7D1D6C8d155A54ccf43`
+1. CampaignManager: `0x46ae45448ddEd730d1AcA074f806109245a08502`
+
+## Production Web Site
+http://redbao.me
+
+## Demo Video
+https://youtu.be/VKlfaYuKOfM
+
