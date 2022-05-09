@@ -14,9 +14,9 @@ Technically, Hongbao uses zkSnarks to shield fund transfer, thus hides donors’
 
 ## Component
 
-- Hongbao-core: zkSnark circuits and smart contracts that compose the core logic of this applicatin.
-- Hongbao-UI (under development): a ReactJs based web application.
-- Hongbao-relayer (under development): relay withdraw request (with zk-proof) to campaign.
+- Hongbao-core (this repository): zkSnark circuits and smart contracts that compose the core logic of this applicatin.
+- [Hongbao-UI](https://github.com/geesimon/hongbao-ui): a ReactJs based web application.
+- Hongbao-relayer: relay withdraw request (with zk-proof) to campaign.
 
 ## Requirements
 
@@ -28,7 +28,8 @@ Technically, Hongbao uses zkSnarks to shield fund transfer, thus hides donors’
 1. `cp .env.example .env` and change the parameters accordingly
 1. `npm run build`
 1. `npx truffle develop`
-3. `test`
+  * `migrate --reset`
+  * `test`
 
 ## Usage
 
@@ -41,10 +42,13 @@ Please check [test cases](https://github.com/geesimon/hongbao-core/blob/main/tes
 `npm run migrate:test`
 
 #### Already Deployed
-1. Verifier: `0x586a291c9cb9b0c28B3342b23Bea20ccC7dB16f2`
-1. Hasher: `0xD29a337819c555cfaC8d3ec2709e5A1802197f71`
-1. ETHHongbao: `0x9c8AC5daf77F77593A18ed6b2Fc660785b30963F`
-1. CampaignManager: `0xb4b99e1a14281233AE57BC39c97D9e0585676249`
+1. Verifier: `0x52Bfa85Ca6Fe844b8E90391e89DF3b4f2c91b67F`
+1. Hasher: `0x047315Ef1B6298573f3229BB6f729Dd06Ff22C00`
+1. ETHHongbao_1: `0xC8B9DFe300F374491a25597043252F1343b250f0`
+1. ETHHongbao_10: `0x5B26C997f65e5E4ec93CB05A9a795F9DE2D4150e`
+1. ETHHongbao_100: `0x5b630F70943199EaD899D61BdfaC42D5DC699c95`
+1. ETHHongbao_1000: `0x1B3Ed84f469c65B35E38e6Ff64584dE9a92d4f13`
+4. CampaignManager: `0x68ca3828C0268Cd9A6048E7F3DB4fDfcf971C38d`
 
 
 ### MainNet
