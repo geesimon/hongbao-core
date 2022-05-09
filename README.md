@@ -65,7 +65,7 @@ Please check [test cases](https://github.com/geesimon/hongbao-core/blob/main/tes
 1. CampaignManager: `0x46ae45448ddEd730d1AcA074f806109245a08502`
 
 ## Production Web Site
-http://redbao.me
+https://redbao.me
 
 ## Demo Video
 https://youtu.be/VKlfaYuKOfM
