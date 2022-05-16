@@ -16,7 +16,7 @@ Technically, Hongbao uses zkSnarks to shield fund transfer, thus hides donors’
 
 - Hongbao-core (this repository): zkSnark circuits and smart contracts that compose the core logic of this applicatin.
 - [Hongbao-UI](https://github.com/geesimon/hongbao-ui): a ReactJs based web application.
-- Hongbao-relayer: relay withdraw request (with zk-proof) to campaign.
+- [Hongbao-relayer](https://github.com/geesimon/hongbao-relayer): relay withdraw request (with zk-proof) to campaign.
 
 ## Requirements
 
