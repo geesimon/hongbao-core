@@ -8,7 +8,7 @@ When people ask friends to do a favor on emergent finance need (for example: cur
 
 ## ZK Solution
 
-The application is based on [Tornado.cash](https://github.com/tornadocash/tornado-core) source code with the migrations to latest circom (2.0.3) and snarkjs (0.4.16). Asker uses this app to setup a campaign, then send the campaign link to friends via social network. Her friends can then follow the link to transfer fund anonymously. The requester can see how many people and how much in total made to this campaign but can never find out individual donation (who and by how much).
+The application is based on [Tornado.cash](https://github.com/tornadocash/tornado-core) source code and migrated to latest circom (2.0.3) and snarkjs (0.4.16). Asker uses this app to setup a campaign, then send the campaign link to friends via social network. Her friends can then follow the link to transfer fund anonymously. The requester can see how many people and how much in total made to this campaign but can never find out individual donation (who and by how much).
 
 Technically, Hongbao uses zkSnarks to shield fund transfer, thus hides donors’ activity. 
 
